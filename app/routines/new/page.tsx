@@ -35,7 +35,7 @@ export default function NewRoutinePage() {
     const routine = {
       id: createId("routine"),
       name,
-      timeOfDay: "afternoon",
+      timeOfDay: "afternoon" as const,
       activities,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
@@ -51,7 +51,7 @@ export default function NewRoutinePage() {
         <h1 className="text-3xl font-black">Nueva rutina</h1>
 
         <input
-          className="mt-6 w-full rounded-xl p-4 border"
+          className="mt-6 w-full rounded-xl border p-4"
           value={name}
           onChange={(e) => setName(e.target.value)}
         />
@@ -59,7 +59,7 @@ export default function NewRoutinePage() {
         <div className="mt-6">
           <h2 className="font-bold">Agregar actividad</h2>
 
-          <div className="flex gap-2 flex-wrap mt-3">
+          <div className="mt-3 flex flex-wrap gap-2">
             {ACTIVITY_TEMPLATES.map((t) => (
               <button
                 key={t.id}
@@ -76,7 +76,7 @@ export default function NewRoutinePage() {
           <h2 className="font-bold">Actividades</h2>
 
           {activities.map((a) => (
-            <div key={a.id} className="bg-white p-3 rounded-lg mt-2">
+            <div key={a.id} className="mt-2 rounded-lg bg-white p-3">
               {a.label} — {a.minutes} min
             </div>
           ))}
@@ -84,7 +84,7 @@ export default function NewRoutinePage() {
 
         <button
           onClick={save}
-          className="mt-8 rounded-xl bg-sky-500 px-4 py-3 text-white font-semibold"
+          className="mt-8 rounded-xl bg-sky-500 px-4 py-3 font-semibold text-white"
         >
           Guardar rutina
         </button>

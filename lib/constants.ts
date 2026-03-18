@@ -1,4 +1,4 @@
-import { ActivityTemplate } from "@/types";
+mport { ActivityTemplate } from "@/types";
 
 export const ACTIVITY_TEMPLATES: ActivityTemplate[] = [
   { id: "play", label: "Jugar", illustration: "play", defaultMinutes: 15 },
