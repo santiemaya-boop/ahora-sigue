@@ -1,5 +1,7 @@
 // PRODUCTION-READY VERSION (uses /public/illustrations)
 
+"use client";
+
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronRight, Play, Pause, SkipForward, RotateCcw } from "lucide-react";
