@@ -1,65 +1,207 @@
-import Image from "next/image";
+// PRODUCTION-READY VERSION (uses /public/illustrations)
 
-export default function Home() {
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { ChevronRight, Play, Pause, SkipForward, RotateCcw } from "lucide-react";
+
+// TYPES
+
+type Mode = "now" | "soon" | "next" | "finished";
+type ThemeKey = "green" | "violet" | "blue" | "amber" | "indigo";
+type IllustrationKey =
+  | "play"
+  | "task"
+  | "bath"
+  | "dinner"
+  | "sleep"
+  | "soon"
+  | "finished";
+
+type Activity = {
+  id: string;
+  titleNow: string;
+  titleSoon: string;
+  titleNext: string;
+  nextLabel: string;
+  afterLabel: string;
+  color: ThemeKey;
+  illustration: IllustrationKey;
+};
+
+// DATA
+
+const ACTIVITIES: Activity[] = [
+  {
+    id: "jugar",
+    titleNow: "¡Es hora de jugar!",
+    titleSoon: "Vamos a hacer\nla tarea",
+    titleNext: "¡Vamos a hacer\nla tarea!",
+    nextLabel: "Sigue: Hacer tarea",
+    afterLabel: "Después: Bañarse",
+    color: "green",
+    illustration: "play",
+  },
+  {
+    id: "tarea",
+    titleNow: "¡Vamos a hacer\nla tarea!",
+    titleSoon: "Vamos a bañarnos",
+    titleNext: "¡Hora del baño!",
+    nextLabel: "Sigue: Bañarse",
+    afterLabel: "Después: Cenar",
+    color: "blue",
+    illustration: "task",
+  },
+  {
+    id: "banarse",
+    titleNow: "¡Hora del baño!",
+    titleSoon: "Vamos a cenar",
+    titleNext: "¡Hora de cenar!",
+    nextLabel: "Sigue: Cenar",
+    afterLabel: "Después: Dormir",
+    color: "violet",
+    illustration: "bath",
+  },
+  {
+    id: "cenar",
+    titleNow: "¡Hora de cenar!",
+    titleSoon: "Vamos a dormir",
+    titleNext: "¡Hora de dormir!",
+    nextLabel: "Sigue: Dormir",
+    afterLabel: "Después: Fin de rutina",
+    color: "amber",
+    illustration: "dinner",
+  },
+  {
+    id: "dormir",
+    titleNow: "¡Hora de dormir!",
+    titleSoon: "La rutina termina",
+    titleNext: "¡Rutina completada!",
+    nextLabel: "Sigue: Fin",
+    afterLabel: "Ahora Sigue",
+    color: "indigo",
+    illustration: "sleep",
+  },
+];
+
+const THEMES: Record<ThemeKey, any> = {
+  green: { header: "text-sky-400", progressBg: "bg-sky-100", progressFill: "from-green-300 to-emerald-400", bottom: "bg-sky-100", text: "text-sky-600", accent: "text-sky-600", glow: "", illustrationBg: "from-cyan-50 via-white to-sky-50" },
+  violet: { header: "text-slate-400", progressBg: "bg-amber-100", progressFill: "from-violet-300 to-fuchsia-400", bottom: "bg-pink-100", text: "text-violet-700", accent: "text-violet-700", glow: "", illustrationBg: "from-amber-50 via-white to-pink-50" },
+  blue: { header: "text-sky-500", progressBg: "bg-sky-100", progressFill: "from-sky-400 to-cyan-400", bottom: "bg-sky-100", text: "text-violet-700", accent: "text-violet-700", glow: "", illustrationBg: "from-sky-50 via-white to-indigo-50" },
+  amber: { header: "text-amber-400", progressBg: "bg-amber-100", progressFill: "from-amber-300 to-orange-400", bottom: "bg-orange-100", text: "text-amber-700", accent: "text-amber-700", glow: "", illustrationBg: "from-orange-50 via-white to-amber-50" },
+  indigo: { header: "text-indigo-400", progressBg: "bg-indigo-100", progressFill: "from-indigo-300 to-violet-400", bottom: "bg-indigo-100", text: "text-indigo-700", accent: "text-indigo-700", glow: "", illustrationBg: "from-indigo-50 via-white to-violet-50" },
+};
+
+const ILLUSTRATION_SRC: Record<IllustrationKey, string> = {
+  play: "/illustrations/play.png",
+  task: "/illustrations/task.png",
+  bath: "/illustrations/bath.png",
+  dinner: "/illustrations/dinner.png",
+  sleep: "/illustrations/sleep.png",
+  soon: "/illustrations/soon.png",
+  finished: "/illustrations/finished.png",
+};
+
+function getTheme(mode: Mode, activity: Activity) {
+  if (mode === "soon") return THEMES.violet;
+  if (mode === "next") return THEMES.blue;
+  if (mode === "finished") return THEMES.indigo;
+  return THEMES[activity.color];
+}
+
+function getCardCopy(mode: Mode, activity: Activity) {
+  if (mode === "finished") {
+    return {
+      header: "Ahora Sigue",
+      title: "¡Rutina completada!",
+      lower: "Terminamos la rutina",
+      illustration: "finished" as IllustrationKey,
+    };
+  }
+
+  return {
+    header: mode === "now" ? "AHORA" : mode === "soon" ? "En breve..." : "Ahora sigue...",
+    title: mode === "now" ? activity.titleNow : mode === "soon" ? activity.titleSoon : activity.titleNext,
+    lower: mode === "now" ? activity.nextLabel : activity.afterLabel,
+    illustration: mode === "soon" ? "soon" : activity.illustration,
+  };
+}
+
+function Illustration({ kind }: { kind: IllustrationKey }) {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <img
+      src={ILLUSTRATION_SRC[kind]}
+      className="max-h-[260px] mx-auto"
+      alt="illustration"
+    />
+  );
+}
+
+export default function App() {
+  const [index, setIndex] = useState(0);
+  const [mode, setMode] = useState<Mode>("now");
+  const [elapsed, setElapsed] = useState(0);
+  const [running, setRunning] = useState(false);
+
+  const activity = ACTIVITIES[index];
+  const progress = elapsed / 12;
+
+  useEffect(() => {
+    if (!running) return;
+
+    const interval = setInterval(() => {
+      setElapsed((prev) => {
+        const next = prev + 1;
+
+        if (next === 8) setMode("soon");
+
+        if (next >= 12) {
+          const isLast = index === ACTIVITIES.length - 1;
+
+          if (isLast) {
+            setMode("finished");
+            setRunning(false);
+            return 12;
+          }
+
+          setMode("next");
+          setTimeout(() => {
+            setIndex((i) => i + 1);
+            setElapsed(0);
+            setMode("now");
+          }, 1200);
+        }
+
+        return next;
+      });
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [running, index]);
+
+  const theme = getTheme(mode, activity);
+  const copy = getCardCopy(mode, activity);
+
+  return (
+    <div className="p-10">
+      <div className="max-w-sm mx-auto bg-white rounded-3xl p-6">
+        <h1 className={theme.header}>{copy.header}</h1>
+        <Illustration kind={copy.illustration} />
+        <h2 className="text-xl whitespace-pre-line">{copy.title}</h2>
+        <div className="h-4 bg-gray-200 rounded-full mt-4">
+          <div
+            className="h-4 bg-blue-400 rounded-full"
+            style={{ width: `${progress * 100}%` }}
+          />
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+        <p className="mt-4">{copy.lower}</p>
+
+        <div className="flex gap-2 mt-6">
+          <button onClick={() => setRunning(true)}>Start</button>
+          <button onClick={() => setRunning(false)}>Pause</button>
+          <button onClick={() => setIndex((i) => i + 1)}>Next</button>
+          <button onClick={() => window.location.reload()}>Reset</button>
         </div>
-      </main>
+      </div>
     </div>
   );
 }
